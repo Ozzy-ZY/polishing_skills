@@ -3,15 +3,24 @@ using System.Text;
 
 namespace polishing_skills
 {
+    internal class RandomGenerator
+    {
+        private static int seedCounter = new Random().Next();
+
+        internal static Random GetRandom()
+        {
+            return new Random(System.Threading.Interlocked.Increment(ref seedCounter));
+        }
+    }
     internal class Encryption
     {
         private static StringBuilder key = new StringBuilder();
-        private static Random random = new Random();
         private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" +
                                      "0123456789`~!@#$%^&*()-_=+{}[];:'',./|";
 
         public static void keyInit(int length)
         {
+            Random random = RandomGenerator.GetRandom();
             for (int i = 0; i < length; i++)
             {
                 key.Append(chars[random.Next(chars.Length)]);
@@ -58,6 +67,13 @@ namespace polishing_skills
                 left = temp;
             }
             return right + left;
+        }
+        public static void encryptBlocksInParallel(string[] blocks, int numOfRounds)
+        {
+            Parallel.For(0, blocks.Length, i =>
+            {
+                blocks[i] = encrypt(blocks[i], numOfRounds);
+            });
         }
     }
 }
